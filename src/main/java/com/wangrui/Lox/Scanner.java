@@ -192,6 +192,11 @@ public class Scanner {
     }
 
 
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner("var wangrui = 123;");
+        List<Token> tokens1 = scanner.scanTokens();
+        System.out.println(tokens1);
+    }
 
 
 }
