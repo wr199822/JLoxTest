@@ -7,6 +7,8 @@ import java.util.List;
 import static com.wangrui.Lox.TokenType.*;
 
 class Parser {
+
+  private static class ParseError extends RuntimeException {}
   private final List<Token> tokens;
   private int current = 0;
 
@@ -129,6 +131,19 @@ class Parser {
     if (check(type)) return advance();
 
     throw error(peek(), message);
+  }
+
+  private ParseError error(Token token, String message) {
+    Parser.error(token, message);
+    return new ParseError();
+  }
+
+  static void error(Token token, String message) {
+    if (token.type == TokenType.EOF) {
+      report(token.line, " at end", message);
+    } else {
+      report(token.line, " at '" + token.lexeme + "'", message);
+    }
   }
 
 
