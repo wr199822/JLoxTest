@@ -1,7 +1,5 @@
 package com.wangrui.Lox;
 
-import com.sun.org.apache.bcel.internal.generic.RET;
-
 import java.util.List;
 
 import static com.wangrui.Lox.TokenType.*;
@@ -14,6 +12,14 @@ class Parser {
 
   Parser(List<Token> tokens) {
     this.tokens = tokens;
+  }
+
+  Expr parse() {
+    try {
+      return expression();
+    } catch (ParseError error) {
+      return null;
+    }
   }
 
   private  Expr expression(){
@@ -89,8 +95,7 @@ class Parser {
       consume(RIGHT_PAREN, "Expect ')' after expression.");
       return new Expr.Grouping(expr);
     }
-
-    return null;
+    throw error(peek(), "Expect expression.");
   }
 
 
@@ -126,6 +131,32 @@ class Parser {
   private Token previous() {
     return tokens.get(current - 1);
   }
+  private ParseError error(Token token, String message) {
+    Lox.error(token, message);
+    return new ParseError();
+  }
+
+  private void synchronize() {
+    advance();
+
+    while (!isAtEnd()) {
+      if (previous().type == SEMICOLON) return;
+
+      switch (peek().type) {
+        case CLASS:
+        case FUN:
+        case VAR:
+        case FOR:
+        case IF:
+        case WHILE:
+        case PRINT:
+        case RETURN:
+          return;
+      }
+
+      advance();
+    }
+  }
 
   private Token consume(TokenType type, String message) {
     if (check(type)) return advance();
@@ -133,18 +164,6 @@ class Parser {
     throw error(peek(), message);
   }
 
-  private ParseError error(Token token, String message) {
-    Parser.error(token, message);
-    return new ParseError();
-  }
-
-  static void error(Token token, String message) {
-    if (token.type == TokenType.EOF) {
-      report(token.line, " at end", message);
-    } else {
-      report(token.line, " at '" + token.lexeme + "'", message);
-    }
-  }
 
 
 }
